@@ -3,6 +3,8 @@ name: Instagram 자동 게시
 on:
   schedule:
     - cron: "5,35 * * * *"   # 30분마다 확인 (UTC 기준, 실제 실행은 몇 분 늦을 수 있음)
+  push:
+    paths: ["queue/*.json"]   # 핸드폰에서 원고를 올리면 바로 렌더링 (게시는 시간이 됐을 때만)
   workflow_dispatch:
     inputs:
       folder:
@@ -26,6 +28,28 @@ jobs:
       - name: 최신 상태로 맞추기 (중복 게시 방지)
         run: |
           git pull --ff-only origin "${GITHUB_REF_NAME}"
+          echo "IMAGE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      # queue/2026-12-01_0700_제목.json 하나만 올리면: posts/제목.json 으로 옮기고 queue/2026-12-01_0700_제목/ 에 PNG·caption.txt 생성
+      - name: 원고(JSON) 렌더링
+        run: |
+          shopt -s nullglob
+          files=(queue/*.json)
+          [ ${#files[@]} -eq 0 ] && exit 0
+          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-color-emoji
+          for f in "${files[@]}"; do
+            base=$(basename "$f" .json)
+            if [[ ! $base =~ ^([0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{4})_(.+)$ ]]; then
+              echo "::error::$f 이름은 YYYY-MM-DD_HHMM_제목.json 형식이어야 합니다"; exit 1
+            fi
+            mkdir -p posts && git mv -f "$f" "posts/${BASH_REMATCH[2]}.json"
+            python3 render.py "posts/${BASH_REMATCH[2]}.json" --queue "${BASH_REMATCH[1]}"
+          done
+          git config user.name "today-dudeoji-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A queue posts
+          git commit -m "원고 렌더링"
+          git push
           echo "IMAGE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
 
       - name: 게시

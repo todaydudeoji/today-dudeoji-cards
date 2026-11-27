@@ -1,4 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@500;700;900&display=block');
+/* 글꼴은 template/fonts 에 들어 있어요 (SIL OFL 1.1). 인터넷 연결 없이도 같은 모습으로 렌더링됩니다. */
+@font-face {
+  font-family: 'Noto Sans KR';
+  src: url('fonts/NotoSansKR.ttf') format('truetype');
+  font-weight: 100 900; font-style: normal; font-display: block;
+}
+@font-face {
+  font-family: 'Black Han Sans';
+  src: url('fonts/BlackHanSans-Regular.ttf') format('truetype');
+  font-weight: 400; font-style: normal; font-display: block;
+}
 
 :root {
   --cream: #FBF4E2;
