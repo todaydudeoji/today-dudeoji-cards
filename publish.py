@@ -80,7 +80,8 @@ def publish(folder):
     if not 2 <= len(images) <= 10:
         raise SystemExit(f"이미지는 2~10장이어야 합니다 (현재 {len(images)}장)")
     caption = (folder / "caption.txt").read_text(encoding="utf-8-sig").strip()
-    repo, sha = os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_SHA"]
+    repo = os.environ["GITHUB_REPOSITORY"]
+    sha = os.environ.get("IMAGE_SHA") or os.environ["GITHUB_SHA"]
     rel = folder.relative_to(ROOT).as_posix()
     ig = os.environ["IG_USER_ID"]
 

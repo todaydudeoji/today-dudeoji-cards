@@ -23,6 +23,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: 최신 상태로 맞추기 (중복 게시 방지)
+        run: |
+          git pull --ff-only origin "${GITHUB_REF_NAME}"
+          echo "IMAGE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
       - name: 게시
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
